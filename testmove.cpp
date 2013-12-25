@@ -17,14 +17,14 @@ class String
   String(const char* str)
     : data_(new char[strlen(str) + 1])
   {
-    strcpy(data_, str);
+    strcpy_s(data_,strlen(str) + 1, str);
   }
  
   String(const String& rhs)
     : data_(new char[rhs.size() + 1])
   {
-    cout<<"copy constructor, data address is "<<hex<<int(&data_)<<endl;
-    strcpy(data_, rhs.c_str());
+    cout<<"copy constructor, data address is "<<static_cast<const void*>(data_)<<endl;
+    strcpy_s(data_, rhs.size() + 1, rhs.c_str());
   }
   /* Delegate constructor in C++11
   String(const String& rhs)
@@ -38,32 +38,32 @@ class String
     delete[] data_;
   }
  
-  /* Traditional:
+  
   String& operator=(const String& rhs)
   {
     String tmp(rhs);
     swap(tmp);
     return *this;
   }
-  */
-  String& operator=(String rhs)
+  
+  /* Traditional:String& operator=(String rhs)
   {
     swap(rhs);
     return *this;
-  }
+  }*/
  
   // C++ 11
   String(String&& rhs)
     : data_(rhs.data_)
   {
-    cout<<"move constructor, data address is "<<hex<<int(&data_)<<endl;  
+    cout<<"move constructor, data address is "<<static_cast<const void*>(data_)<<endl;  
     rhs.data_ = nullptr;
   }
  
   String& operator=(String&& rhs)
   {
     swap(rhs);
-    cout<<"move assignment, data address is "<<hex<<int(&data_)<<endl;
+    cout<<"move assignment, data address is "<<static_cast<const void*>(data_)<<endl;
     return *this;
   }
  
@@ -86,7 +86,7 @@ class String
  
   friend ostream& operator<< (ostream& os, const String& str)
   {
-    os<<"data_ address is "<<hex<<int(&(str.data_))<<", string is "<<str.data_<<endl;
+    os<<"data_ address is "<<static_cast<const void*>(str.data_)<<", string is "<<str.data_<<endl;
     return os;
   }
  private:
@@ -112,14 +112,25 @@ int main()
   String s0;
   cout << "s0" << s0 <<endl;
   String s1("hello");
-  cout << "s1" << s1 <<endl;
+  cout << "s1 " << s1 <<endl;
   String s2(s0);
-  cout << "s2" << s2 <<endl;
+  cout << "s2 " << s2 <<endl;
   String s3 = s1;
-  cout << "s3" << s3 <<endl;
+  cout << "s3 " << s3 <<endl;
   s2 = s1;
   cout<<"after s2 = s1" << " s2 " << s2 <<endl;
- 
+  String s5;
+  s5 = std::move(baz());
+  cout << "s3 " << s3 <<endl;
+  
+  String s6;  
+  s6 = std::forward<String&>(s3);
+  cout << "s6 " << s6 <<endl;
+  
+  String s7;
+  s7 = std::move(s3);
+  cout << "s7 " << s7 <<endl;
+  
   foo(s1);
   bar(s1);
   foo("temporary");
